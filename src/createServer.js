@@ -18,8 +18,7 @@ function createServer() {
     }
 
     if (!url.startsWith('/file/')) {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'text/plain');
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
 
       return res.end('Use /file/<filename> to load files');
     }
