@@ -9,22 +9,30 @@ function createServer() {
   // Return instance of http.Server class
   return http.createServer((req, res) => {
     const { url } = req;
+    const publicPathPrefix = '/file';
+    const pathname = url;
 
-    if (!url.startsWith('/file')) {
-      res.writeHead(400, { 'Content-Type': 'text/plain' });
-      res.end('Use /file/<filename> to load files');
+    let relativeFilePath;
+
+    if (pathname === publicPathPrefix || pathname === `${publicPathPrefix}/`) {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/plain');
+      relativeFilePath = 'index.html';
+    } else if (pathname.startsWith(`${publicPathPrefix}/`)) {
+      relativeFilePath = pathname.substring(publicPathPrefix.length + 1);
+    } else {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'text/plain');
+
+      res.end(
+        'Invalid file request. Files must be requested via /file/path/to/file.',
+      );
 
       return;
     }
 
-    if (!url.startsWith('/file/')) {
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-
-      return res.end('Use /file/<filename> to load files');
-    }
-
     const publicDir = path.resolve(__dirname, '..', 'public');
-    let filePath = url.slice(6);
+    let filePath = relativeFilePath;
 
     if (filePath === '' || filePath === '/') {
       filePath = 'index.html';
